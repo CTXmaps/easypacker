@@ -1,5 +1,6 @@
 # easypacker
 simple tool to auto-pack custom content into .bsp using bspzip.exe
+works directly from Hammer Editor
 
 usage:
 
@@ -11,11 +12,18 @@ usage:
 now you can compile your map.
 
 additional usage:
+
 1. Create <mapname>_content.txt file, put it right next to <mapname>.vmf
 2. Put a list of files, folders, that you want easypacker to pack. 
-example:
+   
+   example:
+   
    maps\<mapname>.nav		//add nav file
+   
    sound\ctxmgs\*.mp3		//add all mp3 files from folder
+   
    sound\ctxmgs?\*.mp3		//add all mp3 files from folder and all subfolders (recursive)
+   
    sound\ctxmgs\*.*		//add any files from folder
+   
   
