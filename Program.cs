@@ -7,8 +7,6 @@ namespace easypacker
 {
 	class Program
 	{
-		public const int PLATFORM_MAX_PATH = 256;
-
 		public static readonly string[] MATERIAL_SHADERS =
 		{
 			"$basetexture",
@@ -205,7 +203,7 @@ namespace easypacker
 			//use bspzip to pack content
 			File.WriteAllLines( "temp.txt", content );
 
-			File.Copy( bspFile, gamedir + "maps\\" + mapName + ".bsp.easypacker_backup" );
+			File.Copy( bspFile, bspFile + ".easypacker_backup", true );
 
 			Process proc = new Process();
 			proc.StartInfo.FileName = "bspzip.exe";
