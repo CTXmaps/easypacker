@@ -53,6 +53,10 @@ namespace easypacker
 		private static int count = 0;
 		private static long starttime = 0;
 
+		private static string mapName;
+		private static string bspFile;
+		private static string vmfFile;
+
 		static void Main( string[] args )
 		{
 			if ( args.Length != 2 )
@@ -62,9 +66,9 @@ namespace easypacker
 			}
 
 			gamedir = args[1] + "\\";
-			string mapName = Path.GetFileNameWithoutExtension( args[0] );
-			string bspFile = args[0] + ".bsp";
-			string vmfFile = args[0] + ".vmf";
+			mapName = Path.GetFileNameWithoutExtension( args[0] );
+			bspFile = args[0] + ".bsp";
+			vmfFile = args[0] + ".vmf";
 
 			if ( !File.Exists( bspFile ) )
 			{
@@ -154,47 +158,8 @@ namespace easypacker
 				}
 			}
 
-			//massive vmf scan
-			foreach ( string line in vmfdata )
-			{
-				tempstr = line;
-
-				//scan entity sound value by "message":
-				AddContentItem( gamedir + "sound\\" + Util.GetEntry( ref tempstr, "message" ) );
-				AddContentItem( gamedir + "sound\\" + Util.GetEntry( ref tempstr, "MoveSound" ) );
-
-				//scan color_correction files and all others by "filename":
-				AddContentItem( gamedir + Util.GetEntry( ref tempstr, "filename" ) );
-
-				//scan entity model value by "model":
-				string mdlName = Util.GetEntry( ref tempstr, "model" );
-				if ( AddContentItem( gamedir + mdlName ) )
-				{
-						//scan model files:						
-						string mdlNameNoExt = mdlName.Replace( Path.GetExtension( mdlName ), string.Empty );
-						AddContentItem( gamedir + mdlNameNoExt + ".dx90.vtx" );
-						AddContentItem( gamedir + mdlNameNoExt + ".vvd" );
-						AddContentItem( gamedir + mdlNameNoExt + ".phy" );
-
-						//scan model materails:
-						foreach ( string material in GetModelMaterials( mdlName ) )
-						{
-							if ( AddContentItem( gamedir + material ) )
-							{
-								foreach ( string texture in GetMaterialTextures( material ) )
-									AddContentItem( gamedir + texture );			
-							}
-						}
-				}
-
-				//scan brush materials
-				string matName = "materials\\" + Util.GetEntry( ref tempstr, "material" ) + ".vmt";
-				if ( AddContentItem( gamedir + matName ) )
-				{
-					foreach ( string texture in GetMaterialTextures( matName ) )
-						AddContentItem( gamedir + texture );					
-				}
-			}
+			//recursive vmf scan
+			MassiveVMFScan( ref vmfdata );
 
 			Msg( count + " files found in " + ( Timestamp() - starttime ) + "s" );
 			starttime = Timestamp();
@@ -312,7 +277,7 @@ namespace easypacker
 						ext = Path.GetExtension( entry );
 						if ( !string.IsNullOrEmpty( ext ) )
 						{
-							entry.Replace( ext, string.Empty );
+							entry = entry.Replace( ext, string.Empty );
 						}
 
 						textures.Add( "materials" + "\\" + entry + ".vtf" );
@@ -350,6 +315,68 @@ namespace easypacker
 				}
 			}
 			return materials;
+		}
+
+		private static void MassiveVMFScan( ref string[] vmfdata )
+		{
+			//massive vmf scan
+			string tempstr;
+			foreach ( string line in vmfdata )
+			{
+				tempstr = line;
+
+				//scan entity sound value by "message":
+				AddContentItem( gamedir + "sound\\" + Util.GetEntry( ref tempstr, "message" ) );
+				AddContentItem( gamedir + "sound\\" + Util.GetEntry( ref tempstr, "MoveSound" ) );
+
+				//scan color_correction files and all others by "filename":
+				AddContentItem( gamedir + Util.GetEntry( ref tempstr, "filename" ) );
+
+				//scan entity model value by "model":
+				string mdlName = Util.GetEntry( ref tempstr, "model" );
+				if ( AddContentItem( gamedir + mdlName ) )
+				{
+						//scan model files:						
+						string mdlNameNoExt = mdlName.Replace( Path.GetExtension( mdlName ), string.Empty );
+						AddContentItem( gamedir + mdlNameNoExt + ".dx90.vtx" );
+						AddContentItem( gamedir + mdlNameNoExt + ".vvd" );
+						AddContentItem( gamedir + mdlNameNoExt + ".phy" );
+
+						//scan model materails:
+						foreach ( string material in GetModelMaterials( mdlName ) )
+						{
+							if ( AddContentItem( gamedir + material ) )
+							{
+								foreach ( string texture in GetMaterialTextures( material ) )
+									AddContentItem( gamedir + texture );			
+							}
+						}
+				}
+
+				//scan brush materials
+				string matName = "materials\\" + Util.GetEntry( ref tempstr, "material" ) + ".vmt";
+				if ( AddContentItem( gamedir + matName ) )
+				{
+					foreach ( string texture in GetMaterialTextures( matName ) )
+						AddContentItem( gamedir + texture );					
+				}
+
+				//scan for func_instance				
+				string vmfFileEntry = Util.GetEntry( ref tempstr, "file" );
+				if ( !string.IsNullOrEmpty( vmfFileEntry ) )
+				{
+					if ( Path.GetExtension( vmfFileEntry ) == ".vmf" )
+					{
+						string vmf = gamedir.Replace( "csgo\\", string.Empty ) + "sdk_content\\maps\\" + vmfFileEntry;
+
+						if ( File.Exists( vmf ) )
+						{
+							string[] file = File.ReadAllLines( vmf );
+							MassiveVMFScan( ref file );
+						}
+					}
+				}
+			}			
 		}
 	}
 }
