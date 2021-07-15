@@ -14,6 +14,9 @@ namespace easypacker
 			"$basetexture3",
 			"$basetexture4",
 			"$bumpmap",
+			"$bumpmap2",
+			"$bumpmap3",
+			"$bumpmap4",
 			"$normalmap",
 			"$detail",
 			"$dudvmap",
@@ -272,6 +275,7 @@ namespace easypacker
 				for ( int j = 0; j < MATERIAL_SHADERS.Length; j++ )
 				{
 					entry = Util.GetEntry( ref filedata[i], MATERIAL_SHADERS[j] );
+
 					if ( !string.IsNullOrEmpty( entry ) )
 					{
 						ext = Path.GetExtension( entry );
@@ -338,9 +342,12 @@ namespace easypacker
 				{
 						//scan model files:						
 						string mdlNameNoExt = mdlName.Replace( Path.GetExtension( mdlName ), string.Empty );
+						AddContentItem( gamedir + mdlNameNoExt + ".dx80.vtx" );
 						AddContentItem( gamedir + mdlNameNoExt + ".dx90.vtx" );
 						AddContentItem( gamedir + mdlNameNoExt + ".vvd" );
 						AddContentItem( gamedir + mdlNameNoExt + ".phy" );
+						AddContentItem( gamedir + mdlNameNoExt + ".vtx" );
+						AddContentItem( gamedir + mdlNameNoExt + ".sw.vtx" );
 
 						//scan model materails:
 						foreach ( string material in GetModelMaterials( mdlName ) )
@@ -355,6 +362,7 @@ namespace easypacker
 
 				//scan brush materials
 				string matName = "materials\\" + Util.GetEntry( ref tempstr, "material" ) + ".vmt";
+
 				if ( AddContentItem( gamedir + matName ) )
 				{
 					foreach ( string texture in GetMaterialTextures( matName ) )

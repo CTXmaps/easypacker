@@ -24,7 +24,9 @@ namespace easypacker
 
 		public static string GetEntry( ref string line, string name )
 		{
-			string[] arr = Regex.Replace( line, @"\u0022+", "" ).Split( null );
+			string tmp = Regex.Replace( line, @"\u0022+", "" );
+			string[] arr = Regex.Split( tmp, "\\s+" );
+
 			for ( int i = 0; i < arr.Length - 1; i++ )
 			{
 				if ( arr[i].Equals( name, StringComparison.OrdinalIgnoreCase ) )
